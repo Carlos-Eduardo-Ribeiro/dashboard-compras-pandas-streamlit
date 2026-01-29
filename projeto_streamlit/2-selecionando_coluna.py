@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("Visualização de Compras") # Definição de Título
+st.title("Filtro de Compras") # Definição de Título
 
 df_compras = pd.read_csv( r'datasets\df_compras.csv', sep=';', decimal=',', index_col=0) # Carga dos dados
 

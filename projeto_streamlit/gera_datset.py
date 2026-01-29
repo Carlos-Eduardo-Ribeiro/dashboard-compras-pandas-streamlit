@@ -50,7 +50,7 @@ for i in range(2000):
             'produto' : produto['nome'],
             'cliente_nome' : nome_cliente,
             'cliente_genero' : genero_cliente.replace('male' , 'masculino').replace('female' , 'feminino'),
-            'forma_pagamento' :  forma_pagamento 
+            'forma_pagamento' :  forma_pagamento
 
         }
     )
