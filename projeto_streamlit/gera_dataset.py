@@ -74,6 +74,4 @@ df_produtos.to_csv(pasta_datesets / 'df_produtos.csv', decimal=',', sep=';')
 df_compras.to_excel(pasta_datesets / 'df_compras.xlsx') #Obs: Os constants "decimal" e "sep" não funcionão em arquivos xlsx
 df_lojas.to_excel(pasta_datesets / 'df_lojas.xlsx')
 df_forma_pagamento.to_excel(pasta_datesets / 'df_formas_pagamentos.xlsx')
-df_produtos.to_csv(pasta_datesets / 'df_produtos.xlsx', decimal=',', sep=';')
-
-
+df_produtos.to_csv(pasta_datesets / 'df_produtos.xlsx')

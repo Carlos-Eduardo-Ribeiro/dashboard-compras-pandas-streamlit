@@ -5,7 +5,13 @@ from datetime import timedelta
 st.set_page_config(layout='wide')
 
 st.markdown('# Sistema de Compras', text_alignment='center')
-st.markdown('## Lista de compras', text_alignment='center')
+st.markdown('## Números Gerais')
+
+# Definindo funções de session_state
+
+def limpar_datas():
+    st.session_state['data_inicio'] = data_inicial_default
+    st.session_state['data_final'] = data_final_default
 
 # caminhos dos arquivos
 caminho_compras  = r'datasets\df_compras.csv'
@@ -39,37 +45,84 @@ df_compras['comissao'] =  df_compras['preco'] * 0.05
 data_inicial_default =  df_compras.index.min().date()
 data_final_default = df_compras.index.max().date()
 
-#Ddefinindo suas estruturas no streamlit
-data_inicio =  st.sidebar.date_input('Data inicial:', data_inicial_default, format='DD/MM/YYYY')
-data_final = st.sidebar.date_input('Data final:', data_final_default, format='DD/MM/YYYY')
+#Inicializando a widget
+if 'data_inicio' not in st.session_state:
+    st.session_state['data_inicio'] = data_inicial_default
+
+if 'data_final' not in st.session_state:
+    st.session_state['data_final'] = data_final_default
+
+# Definindo suas estruturas no streamlit
+data_inicio = st.sidebar.date_input(
+    'Data inicial:',
+    format='DD/MM/YYYY',
+    key='data_inicio'
+)
+
+data_final = st.sidebar.date_input(
+    'Data final:',
+    format='DD/MM/YYYY',
+    key='data_final'
+)
+
+# Crinado botão de lipar data baseada na session_state
+st.sidebar.button('Limpar seleção', on_click=limpar_datas)
 
 #Lógica de filtro para a tabela
 df_compras_filtrado = df_compras[(df_compras.index.date >= data_inicio) & (df_compras.index.date <=data_final)]
 
-#criando cards
-total = df_compras_filtrado['preco'].sum()
-total_formatado = f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+#Atribuindo colunas para metricas
+col1, col2 = st.columns(2)
 
-st.markdown(
-    f"""
-    <div style="
-        background-color: white;
-        padding: 1px;               
-        border-radius: 20px;         
-        color: black;                
-        width: 250px;
-        text-align: center;
-        margin : 10px;
-        ">
-        <h4 style= "text-align: center;">Total de Compras</h4>
-        <p style="font-size: 24px; font-weight: bold;">{total_formatado}</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+#criando e formatando valores de cards
+Valor_compras = df_compras_filtrado['preco'].sum()
+Valor_compras = f"R$ {Valor_compras:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-if st.sidebar.button('Aplicar filtro'):
-    st.dataframe(df_compras_filtrado)
-else:
-    st.dataframe(df_compras)
+Quantidade_compras = df_compras_filtrado['preco'].count()
+Quantidade_compras = f"{Quantidade_compras:,.0f}".replace(",", ".")
 
+# Add cards
+col1.metric('Valor de compras do pedido', Valor_compras)
+col2.metric('Quantidade de compras no período', Quantidade_compras)
+
+# Sempre usar uma seguimentação em decorrência da outra para aplicações d multiplas seguimentações
+
+# Add uma linha divisoria
+st.divider()
+
+# Criando marckdown com a loja com mais compras
+principal_loja = df_compras_filtrado['loja'].value_counts().index[0]
+st.markdown(f'## Principal Loja: {principal_loja}')
+
+#Atribuindo colunas para metricas
+col21, col22 = st.columns(2)
+
+#Criando o valor e quantidade vendida pela loja com mais value_counts
+Valor_compras_loja = df_compras_filtrado[df_compras_filtrado['loja'] == principal_loja]['preco'].sum()
+Valor_compras_loja = f"R$ {Valor_compras_loja:,.2f}".replace(',', '.')
+Quantidade_compras_lojas = df_compras_filtrado[df_compras_filtrado['loja'] == principal_loja]['preco'].count()
+Quantidade_compras_lojas = f"{Quantidade_compras_lojas:,.0f}".replace(',', '.')
+
+# Add cards
+col21.metric("Valor de compras no período", Valor_compras_loja)
+col22.metric("Quantidade de compras no período", Quantidade_compras_lojas)
+
+# Add uma linha divisoria
+st.divider()
+
+principal_vendedor = df_compras_filtrado['vendedor'].value_counts().index[0]
+st.markdown(f'## Principal Vendedor: {principal_vendedor}')
+
+#Atribuindo colunas para metricas
+col31, col32 = st.columns(2)
+
+# Criando o valor e quantidade de compras por vendedor
+
+Valor_compras_vendedor =  df_compras_filtrado[df_compras_filtrado['vendedor'] == principal_vendedor]['preco'].sum()
+Valor_compras_vendedor = f'R$ {Valor_compras_vendedor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+Valor_comissao_vendedor = df_compras_filtrado[df_compras_filtrado['vendedor'] == principal_vendedor]['comissao'].sum()
+Valor_comissao_vendedor = f'R$ {Valor_comissao_vendedor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+
+# Add cards
+col31.metric('Valor de vendas no período', Valor_compras_vendedor)
+col32.metric('Comissão de vendas no período', Valor_comissao_vendedor)
